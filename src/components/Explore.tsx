@@ -17,6 +17,7 @@ const tabs = [
   { id: 'people', label: 'People', icon: Users },
   { id: 'coworking', label: 'Coworking', icon: Briefcase },
   { id: 'cost', label: 'Cost of Living', icon: DollarSign },
+  { id: 'neighborhoods', label: 'Neighborhoods', icon: MapPin },
 ];
 
 const categoryImages: Record<string, string[]> = {
@@ -59,7 +60,7 @@ const getImage = (category: string, index: number) => {
 const Explore: React.FC = () => {
   const [activeTab, setActiveTab] = useState('food');
   const [data, setData] = useState<Record<string, any[]>>({
-    food: [], breweries: [], nightlife: [], health: [], weather: [], projects: [], getaways: [], tips: [], people: [], coworking: [], cost: []
+    food: [], breweries: [], nightlife: [], health: [], weather: [], projects: [], getaways: [], tips: [], people: [], coworking: [], cost: [], neighborhoods: []
   });
   const [foodFilter, setFoodFilter] = useState('All');
 
@@ -67,13 +68,13 @@ const Explore: React.FC = () => {
     const fetchData = async () => {
       try {
         const fetchJSON = (url: string) => fetch(url).then(r => r.json()).then(d => d.data || []);
-        const [food, breweries, nightlife, health, weather, projects, getaways, tips, people, coworking, cost] = await Promise.all([
+        const [food, breweries, nightlife, health, weather, projects, getaways, tips, people, coworking, cost, neighborhoods] = await Promise.all([
           fetchJSON('/api/restaurants'), fetchJSON('/api/breweries'), fetchJSON('/api/nightlife'),
           fetchJSON('/api/healthcare'), fetchJSON('/api/weather'), fetchJSON('/api/megaprojects'),
           fetchJSON('/api/getaways'), fetchJSON('/api/tips'), fetchJSON('/api/people'),
-          fetchJSON('/api/coworking'), fetchJSON('/api/cost')
+          fetchJSON('/api/coworking'), fetchJSON('/api/cost'), fetchJSON('/api/neighbourhoods')
         ]);
-        setData({ food, breweries, nightlife, health, weather, projects, getaways, tips, people, coworking, cost });
+        setData({ food, breweries, nightlife, health, weather, projects, getaways, tips, people, coworking, cost, neighborhoods });
       } catch (err) {
         console.error('Failed to fetch explore data', err);
       }
@@ -417,6 +418,58 @@ const Explore: React.FC = () => {
                 </motion.div>
               ))}
             </div>
+          </div>
+        );
+
+      case 'neighborhoods':
+        return (
+          <div className="grid md:grid-cols-2 gap-6 animate-in fade-in duration-500">
+             {data.neighborhoods.map((n: any, i: number) => (
+                <motion.div key={n.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  className="p-6 sm:p-8 rounded-[2rem] bg-white border border-slate-200 hover:border-secondary/30 hover:shadow-2xl transition-all flex flex-col">
+                  
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-2xl font-bold text-slate-900">{n.name}</h3>
+                    <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      {n.area_type}
+                    </span>
+                  </div>
+                  
+                  <p className="text-sm font-medium text-secondary mb-4 italic leading-relaxed">
+                    "{n.personality}"
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">1 BHK Rent</div>
+                      <div className="text-sm font-black text-slate-900">₹{n.rent_1bhk_min.toLocaleString()} - ₹{n.rent_1bhk_max.toLocaleString()}</div>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Buy (per sqft)</div>
+                      <div className="text-sm font-black text-slate-900">₹{n.price_per_sqft_min.toLocaleString()} - ₹{n.price_per_sqft_max.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 mt-auto pt-4 border-t border-slate-100">
+                    <div className="flex items-start gap-3">
+                      <Target className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Best For</div>
+                        <p className="text-xs text-slate-700 font-medium">{n.best_for}</p>
+                      </div>
+                    </div>
+                    {n.insider_tip && (
+                      <div className="flex items-start gap-3 bg-amber-50/50 p-3 rounded-xl border border-amber-100/50">
+                        <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <div className="text-[10px] font-bold text-amber-600/70 uppercase tracking-widest">Insider Tip</div>
+                          <p className="text-xs text-amber-900/80">{n.insider_tip}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+             ))}
           </div>
         );
 
