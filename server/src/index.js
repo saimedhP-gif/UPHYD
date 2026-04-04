@@ -100,6 +100,17 @@ app.use('/api/tips',          tipsRouter);
 app.use('/api/coworking',     coworkingRouter);
 app.use('/api/jobs',          jobsRouter);
 
+// ── Serve Frontend in Production ────────────────────────────────────────────
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../../dist')));
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(__dirname, '../../dist/index.html'));
+  });
+}
+
 // ── 404 & Error Handlers ────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.originalUrl });
